@@ -8,7 +8,6 @@ contract TokenScript is Script {
     Token public token;
 
     address public minter = makeAddr("minter");
-
     function run() external returns (address) {
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
 

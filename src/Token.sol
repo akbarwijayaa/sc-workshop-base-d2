@@ -9,7 +9,6 @@ import {Pausable} from "@openzeppelin-contracts/contracts/utils/Pausable.sol";
 contract Token is ERC20, Ownable, AccessControl, Pausable {
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-
     event Mint(address indexed to, uint256 amount);
     event Burned(address indexed from, uint256 amount);
     error Unauthorized();
@@ -42,5 +41,4 @@ contract Token is ERC20, Ownable, AccessControl, Pausable {
     function unpause() external onlyOwner {
         _unpause();
     }
-
 }
