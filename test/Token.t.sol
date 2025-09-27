@@ -9,10 +9,11 @@ contract TokenTest is Test {
     Token token;
     address public owner = makeAddr("owner");
     address public user1 = makeAddr("user1");
+    address public minter = makeAddr("minter");
 
     function setUp() public {
         vm.startPrank(owner);
-        token = new Token("MyToken", "MTK");
+        token = new Token("MyToken", "MTK", minter);
         vm.stopPrank();
     }
 
@@ -29,7 +30,7 @@ contract TokenTest is Test {
 
     function testMint() public {
         uint256 mintAmount = 1000;
-        vm.startPrank(owner);
+        vm.startPrank(minter);
         token.mint(user1, mintAmount);
         vm.stopPrank();
 
@@ -42,5 +43,49 @@ contract TokenTest is Test {
         vm.expectRevert();
         token.mint(user1, 1000);
         vm.stopPrank();
+    }
+
+    function testMintOwnable() public {
+        uint256 mintAmount = 1000;
+        vm.startPrank(minter);
+        token.mint(user1, mintAmount);
+        vm.stopPrank();
+
+        assertEq(token.balanceOf(user1), mintAmount);
+        assertEq(token.totalSupply(), mintAmount);
+    }
+
+    function testRevertMintingByNonOwner() public {
+        vm.startPrank(user1);
+        vm.expectRevert();
+        token.mint(user1, 1000);
+        vm.stopPrank();
+    }
+
+    function testPublicMint() public {
+        uint256 mintAmount = 500;
+        vm.startPrank(user1);
+        token.publicMint(user1, mintAmount);
+        vm.stopPrank();
+
+        assertEq(token.balanceOf(user1), mintAmount);
+        assertEq(token.totalSupply(), mintAmount);
+    }
+
+    function testPause() public {
+        vm.prank(owner);
+        token.pause();
+
+        vm.prank(minter);
+        vm.expectRevert();
+        token.mint(user1, 1000);
+
+        vm.prank(owner);
+        token.unpause();
+
+        vm.prank(minter);
+        token.mint(user1, 1000);
+
+        assertEq(token.balanceOf(user1), 1000);
     }
 }
